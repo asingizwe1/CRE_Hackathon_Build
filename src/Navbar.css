@@ -1,0 +1,45 @@
+/* Navbar container */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 95%;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 4px 27px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+/* Brand (LIQUID) */
+.brand {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #f4f5f8;
+}
+
+/* Buttons container */
+.nav-links {
+    display: flex;
+    gap: 12px;
+}
+
+/* Each nav button */
+.nav-button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-weight: 500;
+    color: #d2d7df;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.nav-button:hover {
+    background: #f3f4f6;
+    color: #687389;
+}
