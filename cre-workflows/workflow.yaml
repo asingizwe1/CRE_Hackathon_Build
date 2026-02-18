@@ -1,0 +1,25 @@
+version: 1
+name: microbank-liquidation-sms
+description: Send SMS alerts via Africa's Talking when a user is liquidated
+
+workflow:
+  triggers:
+    - type: contract_event
+      chain: sepolia
+      address: "0x56590500e1651613050FC03A21Fe90AA8FE7823C" # CoreMicroBank contract
+      event: "UserLiquidated"
+
+  actions:
+    - type: http_request
+      name: send_sms
+      config:
+        method: POST
+        url: "https://api.africastalking.com/version1/messaging"
+        headers:
+          Accept: "application/json"
+          Content-Type: "application/x-www-form-urlencoded"
+          apiKey: "${AT_API_KEY}"   # stored in CRE secrets
+        body:
+          username: "${AT_USERNAME}"
+          to: "{{event.userId}}"    # dynamic from contract event
+          message: "⚠️ Your account was liquidated. Debt cleared: {{event.debtCleared}}"
