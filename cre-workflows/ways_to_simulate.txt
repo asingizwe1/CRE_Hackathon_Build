@@ -1,0 +1,25 @@
+3. Simulate Locally
+Run the workflow locally to see logs:
+
+bash
+cre workflow simulate ./cre-workflows/workflow.yaml
+This will print logs in your terminal:
+
+Event detected (UserLiquidated)
+
+HTTP request sent to Africa’s Talking
+
+Response received
+
+Screenshot these logs for your hackathon video.
+
+4. Deploy to CRE Network
+Push your workflow live:
+
+bash
+cre workflow deploy ./cre-workflows/workflow.yaml
+You’ll get back a deployment ID or link.
+
+That’s what you share in your submission.
+
+Once deployed, you can view logs in the CRE dashboard (web UI tied to your Chainlink account).

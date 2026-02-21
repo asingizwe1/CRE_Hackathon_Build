@@ -1,0 +1,22 @@
+ CRE workflow as the orchestration layer that connects your smart contract events (onchain) with external systems (offchain).
+
+Your contract: CoreMicroBank emits events like UserLiquidated.
+
+CRE workflow: Listens for those events, then triggers an action (like calling Africa’s Talking SMS API).
+
+Result: Blockchain → CRE → External API → User notification.
+
+“pipeline” that proves your project isn’t just a contract or a UI — it’s a connected system that bridges onchain and offchain worlds.
+
+ CRE — it removes the dependency on your UI/server to “glue” things together.
+ CRE workflow: Provides the pipeline proof — showing that the blockchain event alone can trigger the SMS, even if the UI isn’t involved.
+
+
+HOW IT WORKS
+ Show UI: Trigger liquidation from React front end.
+
+Explain: “Normally, my UI would call the SMS server. But now, CRE is listening directly to the contract.”
+
+Show CRE logs/dashboard: Prove that the workflow detected the event and sent the SMS API call.
+
+Wrap up: “This demonstrates the orchestration layer — blockchain events automatically trigger external actions via CRE.”

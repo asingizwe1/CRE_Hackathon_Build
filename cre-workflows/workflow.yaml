@@ -1,13 +1,21 @@
 version: 1
-name: microbank-liquidation-sms
-description: Send SMS alerts via Africa's Talking when a user is liquidated
+name: microbank-sms-workflow
+description: Send SMS alerts via Africa's Talking when key CoreMicroBank events occur
 
 workflow:
   triggers:
     - type: contract_event
       chain: sepolia
-      address: "0x56590500e1651613050FC03A21Fe90AA8FE7823C" # CoreMicroBank contract
-      event: "UserLiquidated"
+      address: "0xa637140be582b49c54cd8dab6f99dd75fe9d500a" # CoreMicroBank contract
+      event: "UserRegistered"
+    - type: contract_event
+      chain: sepolia
+      address: "0xa637140be582b49c54cd8dab6f99dd75fe9d500a"
+      event: "DepositRecorded"
+    - type: contract_event
+      chain: sepolia
+      address: "0xa637140be582b49c54cd8dab6f99dd75fe9d500a"
+      event: "LoanIssued"
 
   actions:
     - type: http_request
@@ -18,8 +26,45 @@ workflow:
         headers:
           Accept: "application/json"
           Content-Type: "application/x-www-form-urlencoded"
-          apiKey: "${AT_API_KEY}"   # stored in CRE secrets
+          apiKey: "${AT_API_KEY}"
         body:
           username: "${AT_USERNAME}"
-          to: "{{event.userId}}"    # dynamic from contract event
-          message: "⚠️ Your account was liquidated. Debt cleared: {{event.debtCleared}}"
+          to: "{{event.userId}}"   # dynamic from event
+          message: >
+            {% if event.__name__ == "UserRegistered" %}
+              ✅ User registered successfully.
+            {% elif event.__name__ == "DepositRecorded" %}
+              💰 Deposit recorded: {{event.netAmount}} units.
+            {% elif event.__name__ == "LoanIssued" %}
+              📢 Loan issued: {{event.amount}} units.
+            {% endif %}
+
+
+
+
+
+# version: 1
+# name: microbank-liquidation-sms
+# description: Send SMS alerts via Africa's Talking when a user is liquidated
+
+# workflow:
+#   triggers:
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0x56590500e1651613050FC03A21Fe90AA8FE7823C" # CoreMicroBank contract
+#       event: "UserLiquidated"
+
+#   actions:
+#     - type: http_request
+#       name: send_sms
+#       config:
+#         method: POST
+#         url: "https://api.africastalking.com/version1/messaging"
+#         headers:
+#           Accept: "application/json"
+#           Content-Type: "application/x-www-form-urlencoded"
+#           apiKey: "${AT_API_KEY}"   # stored in CRE secrets
+#         body:
+#           username: "${AT_USERNAME}"
+#           to: "{{event.userId}}"    # dynamic from contract event
+#           message: "⚠️ Your account was liquidated. Debt cleared: {{event.debtCleared}}"
