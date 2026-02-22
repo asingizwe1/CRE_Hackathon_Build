@@ -86,11 +86,11 @@ const DepositSection = ({ refreshProtocol }: DepositSectionProps) => {
             await refreshProtocol();
             console.log("DEPOSIT TX:", tx);
 
-            notifySMS(phone,
-                `Osuubiddwa ssente mu Liquid.\n` +
-                `Amount / Omuwendo: UGX ${amount}\n` +
-                `Webale nnyo / Thank you`
-            );
+            // notifySMS(phone,
+            //     `Osuubiddwa ssente mu Liquid.\n` +
+            //     `Amount / Omuwendo: UGX ${amount}\n` +
+            //     `Webale nnyo / Thank you`
+            // );
 
             setVoucher({
                 phone,
@@ -154,7 +154,7 @@ const DepositSection = ({ refreshProtocol }: DepositSectionProps) => {
                     </div>
                 )}
 
-               <VoucherDisplay voucher={voucher} context="deposit" />
+                <VoucherDisplay voucher={voucher} context="deposit" />
 
 
                 <button
