@@ -65,12 +65,12 @@ const LoanSection = () => {
         try {
             await requestLoan(phone, amount);
 
-            notifySMS(
-                phone,
-                `Osuubiddwa ssente mu Liquid.\n` +
-                `Amount / Omuwendo: UGX ${amount}\n` +
-                `Webale nnyo / Thank you`
-            );
+            // notifySMS(
+            //     phone,
+            //     `Osuubiddwa ssente mu Liquid.\n` +
+            //     `Amount / Omuwendo: UGX ${amount}\n` +
+            //     `Webale nnyo / Thank you`
+            // );
 
             alert("Loan requested");
         } catch (e) {

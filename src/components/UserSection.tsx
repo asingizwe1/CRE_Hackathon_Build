@@ -90,11 +90,11 @@ const UserSection = () => {
         txHash: tx.hash,
       });
 
-      await notifySMS(phone,
-        `Osuubiddwa ssente mu Liquid.\n` +
-        `Omukozesa awandiikiddwa bulungi.\n` +
-        `Webale nnyo / Thank you`
-      );
+      // await notifySMS(phone,
+      //   `Osuubiddwa ssente mu Liquid.\n` +
+      //   `Omukozesa awandiikiddwa bulungi.\n` +
+      //   `Webale nnyo / Thank you`
+      // );
 
       setStatus("✅ User registered successfully");
     } catch (err: any) {
