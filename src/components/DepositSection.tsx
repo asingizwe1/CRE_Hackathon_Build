@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import VoucherDisplay from "./VoucherDisplay";
 import { useCoreMicroBank } from "../hooks/useCoreMicroBank";
 //import { sendSMS } from "../utils/sendSMS";
-import { saveUserPhone } from "@/utils/userDictionary";
+import { saveUserPhone, saveUserPhoneRemote } from "@/utils/userDictionary";
 import { phoneToUserId } from "@/utils/userId";
 import { notifySMS } from "@/utils/smsClient";
 //Do NOT mix useWeb3React and window.ethereum in the same app
@@ -113,7 +113,7 @@ const DepositSection = ({ refreshProtocol }: DepositSectionProps) => {
 
 
             saveUserPhone(userId, phone);
-
+            await saveUserPhoneRemote(userId, phone);
             setAmount("");
         } catch (err) {
             console.error("Deposit failed:", err);
