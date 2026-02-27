@@ -8,7 +8,10 @@ import { useCoreMicroBank } from "../hooks/useCoreMicroBank";
 import VoucherDisplay from "./VoucherDisplay";
 import { ugxApproxFromUsd } from "@/utils/sharedUtils";
 //import { sendSMS } from "../utils/sendSMS";
-import { getUserPhone } from "../utils/userDictionary";
+//import { getUserPhone } from "../utils/userDictionary";
+import { saveUserPhone, saveUserPhoneRemote } from "../utils/userDictionary";
+import { phoneToUserId } from "../utils/userId";
+
 import type { Voucher } from "@/types/voucher";
 import { useEffect } from "react";
 const formCard = {
@@ -39,24 +42,63 @@ const WithdrawSection = ({ totalLiquidStaked }: { totalLiquidStaked: number }) =
     const [ugxPreview, setUgxPreview] = useState<number | null>(null);
 
 
+    // const handleWithdraw = async () => {
+    //     if (!phone || !amount) return alert("Missing fields");
+
+    //     try {
+    //         const tx = await withdraw(phone, amount);
+    //         console.log("WITHDRAW TX:", tx);
+
+    //         setVoucher({
+    //             phone,
+    //             amount: Number(amount),
+    //             code: crypto.randomUUID().slice(0, 8).toUpperCase(),
+    //             issuedAt: Date.now(),
+    //             txHash: tx.hash,
+    //         });
+
+    //         alert("Withdraw successful");
+    //     } catch (err) {
+    //         console.error(err);
+    //         alert("Withdraw failed");
+    //     }
+    // };
     const handleWithdraw = async () => {
         if (!phone || !amount) return alert("Missing fields");
 
-        try {
-            const tx = await withdraw(phone, amount);
-            console.log("WITHDRAW TX:", tx);
+        // normalize and compute userId
+        const normalized = phone.trim();
+        const userId = phoneToUserId(normalized);
 
+        // persist mapping remotely (so CRE resolver can resolve later)
+        try {
+            await saveUserPhoneRemote(userId, normalized);
+        } catch (err) {
+            // non-fatal for demo: continue but log
+            console.warn("Remote save failed; continuing with local save", err);
+        }
+
+        // keep local copy for UI convenience
+        saveUserPhone(userId, normalized);
+        localStorage.setItem("lastPhone", normalized);
+
+        // call contract via your hook (adapt if your hook expects phone instead of userId)
+        try {
+            // If your hook expects userId:
+            const tx = await withdraw(userId, amount);
+
+            // If your hook expects phone, change the hook to accept userId or pass normalized phone consistently.
+            await tx.wait?.();
             setVoucher({
-                phone,
+                phone: normalized,
                 amount: Number(amount),
                 code: crypto.randomUUID().slice(0, 8).toUpperCase(),
                 issuedAt: Date.now(),
                 txHash: tx.hash,
             });
-
             alert("Withdraw successful");
         } catch (err) {
-            console.error(err);
+            console.error("Withdraw failed", err);
             alert("Withdraw failed");
         }
     };
