@@ -1,4 +1,4 @@
-version: 2
+version: 1
 name: microbank-sms-workflow
 description: Send SMS alerts via Africa's Talking when key CoreMicroBank events occur (incl. automation proof)
 
@@ -8,42 +8,32 @@ workflow:
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "UserRegistered"
-
     - type: contract_event
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "DepositRecorded"
-
-    # ✅ Automation proof: upkeep converted the fee pool and staked
     - type: contract_event
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "FeesConvertedToLiquid"
-
     - type: contract_event
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "LoanIssued"
-
-    # ✅ Optional (demo narration): user becomes the active borrower
     - type: contract_event
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "DemoActiveBorrowerUpdated"
-
     - type: contract_event
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "WithdrawalProcessed"
-
-    # ✅ Recommended critical alert
     - type: contract_event
       chain: sepolia
       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
       event: "UserLiquidated"
 
   actions:
-    # 1) Resolve phone number from userId (bytes32) using your backend
     - type: http_request
       name: resolve_phone
       config:
@@ -56,28 +46,16 @@ workflow:
         body:
           userId: "{{event.userId}}"
 
-    # 2) Send SMS (either direct to Africa's Talking OR your proxy)
     - type: http_request
       name: send_sms
       config:
         method: POST
-
-        # Option A: use your proxy (recommended, keeps AT keys off CRE)
         url: "${RESOLVER_BASE_URL}/sms"
         headers:
           Accept: "application/json"
           Content-Type: "application/json"
-
-        # Option B (direct to Africa's Talking) - if you prefer direct:
-        # url: "https://api.africastalking.com/version1/messaging"
-        # headers:
-        #   Accept: "application/json"
-        #   Content-Type: "application/x-www-form-urlencoded"
-        #   apiKey: "${AT_API_KEY}"
-
         body:
-          # If using your proxy:
-          to: "{{actions.resolve_phone.data.phone}}"
+          to: "{{steps.resolve_phone.data.phone}}"
           message: >
             {% if event.__name__ == "UserRegistered" %}
               ✅ Registration successful. Welcome to CoreMicroBank.
@@ -95,6 +73,107 @@ workflow:
             {% elif event.__name__ == "UserLiquidated" %}
               ⚠️ Liquidation executed. Debt cleared: {{event.debtCleared}}.
             {% endif %}
+
+# version: 1
+# name: microbank-sms-workflow
+# description: Send SMS alerts via Africa's Talking when key CoreMicroBank events occur (incl. automation proof)
+
+# workflow:
+#   triggers:
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "UserRegistered"
+
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "DepositRecorded"
+
+#     # ✅ Automation proof: upkeep converted the fee pool and staked
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "FeesConvertedToLiquid"
+
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "LoanIssued"
+
+#     # ✅ Optional (demo narration): user becomes the active borrower
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "DemoActiveBorrowerUpdated"
+
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "WithdrawalProcessed"
+
+#     # ✅ Recommended critical alert
+#     - type: contract_event
+#       chain: sepolia
+#       address: "0xa4b19f67D4A9F0b3E3962aC5e9F05cbFA0106A9a"
+#       event: "UserLiquidated"
+
+#   actions:
+#     # 1) Resolve phone number from userId (bytes32) using your backend
+#     - type: http_request
+#       name: resolve_phone
+#       config:
+#         method: POST
+#         url: "${RESOLVER_BASE_URL}/resolve"
+#         headers:
+#           Accept: "application/json"
+#           Content-Type: "application/json"
+#           x-api-key: "${RESOLVER_API_KEY}"
+#         body:
+#           userId: "{{event.userId}}"
+#     - type: condition
+#       name: has_phone
+#       config:
+#         if: "{{actions.resolve_phone.data.phone}}"
+#     # 2) Send SMS (either direct to Africa's Talking OR your proxy)
+#     - type: http_request
+#       name: send_sms
+#       config:
+#         method: POST
+
+#         # Option A: use your proxy (recommended, keeps AT keys off CRE)
+#         url: "${RESOLVER_BASE_URL}/sms"
+#         headers:
+#           Accept: "application/json"
+#           Content-Type: "application/json"
+
+#         # Option B (direct to Africa's Talking) - if you prefer direct:
+#         # url: "https://api.africastalking.com/version1/messaging"
+#         # headers:
+#         #   Accept: "application/json"
+#         #   Content-Type: "application/x-www-form-urlencoded"
+#         #   apiKey: "${AT_API_KEY}"
+
+#         body:
+#           # If using your proxy:
+#           to: "{{steps.resolve_phone.data.phone}}"
+#           message: >
+#             {% if event.__name__ == "UserRegistered" %}
+#               ✅ Registration successful. Welcome to CoreMicroBank.
+#             {% elif event.__name__ == "DepositRecorded" %}
+#               💰 Deposit recorded. Net: {{event.netAmount}} (fee: {{event.feeAmount}}).
+#             {% elif event.__name__ == "FeesConvertedToLiquid" %}
+#               🤖 Automation: Your deposit fees were auto-converted & staked.
+#               Fees: {{event.usdtAmount}} → LIQ: {{event.liquidAmount}}.
+#             {% elif event.__name__ == "LoanIssued" %}
+#               📢 Loan issued: {{event.amount}}. Total debt: {{event.totalDebt}}.
+#             {% elif event.__name__ == "DemoActiveBorrowerUpdated" %}
+#               🕒 Demo mode: You are the active borrower. Interest will auto-accrue.
+#             {% elif event.__name__ == "WithdrawalProcessed" %}
+#               ✅ Withdrawal processed: {{event.amount}}. Check your LIQ bonus if eligible.
+#             {% elif event.__name__ == "UserLiquidated" %}
+#               ⚠️ Liquidation executed. Debt cleared: {{event.debtCleared}}.
+#             {% endif %}
 # version: 1
 # name: microbank-sms-workflow
 # description: Send SMS alerts via Africa's Talking when key CoreMicroBank events occur

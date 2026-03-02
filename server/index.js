@@ -96,12 +96,12 @@ app.post("/user", (req, res) => {
     const { userId, phone } = req.body;
     if (!userId || !phone) return res.status(400).json({ error: "missing fields" });
 
-    // Normalize phone: trim and ensure leading plus if you expect it
     const normalized = phone.trim();
-    store[userId] = normalized;
+    const normalizedId = String(userId).toLowerCase();
+    store[normalizedId] = normalized;
     persist();
 
-    console.log(`Saved mapping ${userId} -> ${normalized}`);
+    console.log(`Saved mapping ${normalizedId} -> ${normalized}`);
     return res.json({ ok: true });
 });
 
@@ -120,10 +120,14 @@ app.post("/resolve", (req, res) => {
 // Optional SMS proxy for local demo
 app.post("/sms", async (req, res) => {
     const { to, message } = req.body;
-    if (!to || !message) return res.status(400).json({ error: "missing fields" });
+
+    // respond 200 even when missing so CRE doesn't treat as hard failure
+    if (!to || !message) {
+        console.warn("SMS request missing fields:", { to, message });
+        return res.json({ ok: false, error: "missing fields" }); // HTTP 200
+    }
 
     try {
-        // Use sandbox endpoint for testing if you have sandbox credentials
         const url = process.env.AT_SANDBOX === "true"
             ? "https://api.sandbox.africastalking.com/version1/messaging"
             : "https://api.africastalking.com/version1/messaging";
@@ -147,13 +151,15 @@ app.post("/sms", async (req, res) => {
         try {
             data = JSON.parse(text);
         } catch {
+            // If response isn't JSON, still return 200 with raw text
+            console.warn("AT returned non-JSON:", text);
             return res.json({ ok: false, raw: text });
         }
 
         return res.json({ ok: true, data });
     } catch (err) {
         console.error("SMS error:", err);
-        return res.json({ ok: false });
+        return res.json({ ok: false, error: "sms send failed" });
     }
 });
 

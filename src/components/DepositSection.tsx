@@ -80,10 +80,12 @@ const DepositSection = ({ refreshProtocol }: DepositSectionProps) => {
 
             // round or floor to avoid decimals
             const protocolAmount = Math.floor(usdAmount);
-
+            await saveUserPhoneRemote(userId, phone);
+            saveUserPhone(userId, phone);
             const tx = await recordDeposit(phone, protocolAmount.toString());
             await tx.wait();
             await refreshProtocol();
+
             console.log("DEPOSIT TX:", tx);
 
             // notifySMS(phone,
@@ -112,8 +114,7 @@ const DepositSection = ({ refreshProtocol }: DepositSectionProps) => {
             alert("✅ Deposit recorded successfully");
 
 
-            saveUserPhone(userId, phone);
-            await saveUserPhoneRemote(userId, phone);
+
             setAmount("");
         } catch (err) {
             console.error("Deposit failed:", err);
