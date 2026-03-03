@@ -145,6 +145,19 @@
     },
     {
         "type": "function",
+        "name": "demoActiveBorrowerId",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bytes32",
+                "internalType": "bytes32"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
         "name": "emitUserState",
         "inputs": [
             {
@@ -462,6 +475,25 @@
         ],
         "outputs": [],
         "stateMutability": "nonpayable"
+    },
+    {
+        "type": "event",
+        "name": "DemoActiveBorrowerUpdated",
+        "inputs": [
+            {
+                "name": "userId",
+                "type": "bytes32",
+                "indexed": true,
+                "internalType": "bytes32"
+            },
+            {
+                "name": "timestamp",
+                "type": "uint256",
+                "indexed": false,
+                "internalType": "uint256"
+            }
+        ],
+        "anonymous": false
     },
     {
         "type": "event",
