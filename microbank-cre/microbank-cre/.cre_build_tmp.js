@@ -12967,25 +12967,32 @@ function buildMessage(event) {
       return "Event received.";
   }
 }
-async function run() {
-  const mockEvent = {
-    __name__: "DepositRecorded",
-    userId: "0xTEST_USER_ID",
+async function main() {
+  const eventType = process.env.EVENT_TYPE || "DepositRecorded";
+  const event = {
+    __name__: eventType,
+    userId: "0xtest_user_id",
     netAmount: 95,
-    feeAmount: 5
+    feeAmount: 5,
+    usdtAmount: 5,
+    liquidAmount: 5,
+    amount: 50,
+    totalDebt: 50,
+    debtCleared: 50
   };
-  console.log("\uD83D\uDD14 Event triggered:", mockEvent.__name__);
-  const phone = await resolvePhone(mockEvent.userId);
+  console.log("\uD83D\uDD14 Event triggered:", event.__name__);
+  const phone = await resolvePhone(event.userId);
   if (!phone) {
     console.log("⚠️ No phone found for userId.");
-    return;
+    return "No phone found";
   }
-  const message = buildMessage(mockEvent);
+  const message = buildMessage(event);
   const smsResponse = await sendSms(phone, message);
   console.log("\uD83D\uDCE8 SMS Response:", smsResponse);
   console.log("✅ Simulation finished.");
+  return smsResponse;
 }
 main().catch(sendErrorResponse);
 export {
-  run as default
+  main
 };
