@@ -557,7 +557,7 @@ const postNotifyLatest = (sendRequester: HTTPSendRequester): NotifyResponse => {
   const body = Buffer.from(bodyBytes).toString("base64")
 
   const req = {
-    url: "https://cre-hackathon-build.onrender.com/notify-latest",
+    url: "https://cre-hackathon-build.onrender.com/notify-latest",//my server containing sms request functionality
     method: "POST" as const,
     body,
     headers: {
@@ -599,6 +599,8 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 /**
+ * cre workflow simulate microbank-cre
+ * 
  * Before simulating, save the mapping
 Invoke-RestMethod -Method Post `
   -Uri "https://cre-hackathon-build.onrender.com/user" `

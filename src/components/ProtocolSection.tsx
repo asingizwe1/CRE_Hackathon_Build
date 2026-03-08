@@ -86,14 +86,14 @@ const ProtocolSection = ({ stats, refreshProtocol }: ProtocolSectionProps) => {
                         <div style={statCard}>
                             <div style={statLabel}>Total Liquid Staked</div>
                             <div style={statValue}>
-                                {Number(totalStakedLIQ).toLocaleString()} LIQ
+                                {Number(totalStakedLIQ).toLocaleString()} LINK
                             </div>
                         </div>
 
                         <div style={statCard}>
                             <div style={statLabel}>Protocol LIQ Balance</div>
                             <div style={statValue}>
-                                {Number(protocolLIQ).toLocaleString()} LIQ
+                                {Number(protocolLIQ).toLocaleString()} LINK
                             </div>
                         </div>
 

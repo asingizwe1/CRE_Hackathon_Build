@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useCoreMicroBank } from "../hooks/useCoreMicroBank";
 import { notifySMS } from "@/utils/smsClient";
 import { ugxApproxFromUsd } from "@/utils/sharedUtils";
-import { phoneToUserId } from "@/utils/userId";
+// import { phoneToUserId } from "@/utils/userId";
 import { saveUserPhoneRemote, saveUserPhone } from "@/utils/userDictionary";
 import { saveDemoEventRemote } from "@/utils/demoEvent";
 const UGX_PER_USD = 3600;
@@ -35,8 +35,7 @@ const actionBtn = {
 };
 
 const LoanSection = () => {
-    const { requestLoan, repayLoan, maxBorrowable, getUserDebt } =
-        useCoreMicroBank();
+    const { requestLoan, repayLoan, maxBorrowable, getUserDebt, phoneToUserId } = useCoreMicroBank();
 
     const [phone, setPhone] = useState("");
     const [amount, setAmount] = useState("");
@@ -65,9 +64,11 @@ const LoanSection = () => {
         }
 
         try {
-            const userId = phoneToUserId(phone);
-            await saveUserPhoneRemote(userId, phone);
-            saveUserPhone(userId, phone);
+            const normalized = phone.trim();
+            const userId = phoneToUserId(normalized);
+
+            await saveUserPhoneRemote(userId, normalized);
+            saveUserPhone(userId, normalized);
 
             await saveDemoEventRemote({
                 eventType: "LoanIssued",
@@ -75,19 +76,18 @@ const LoanSection = () => {
                 amount: Number(amount),
                 totalDebt: Number(amount),
             });
-            await requestLoan(phone, amount);
 
-            // notifySMS(
-            //     phone,
-            //     `Osuubiddwa ssente mu Liquid.\n` +
-            //     `Amount / Omuwendo: UGX ${amount}\n` +
-            //     `Webale nnyo / Thank you`
-            // );
-
+            await requestLoan(normalized, amount);
             alert("Loan requested");
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            alert("Loan request failed");
+            const msg =
+                e?.error?.message ||
+                e?.data?.message ||
+                e?.reason ||
+                e?.message ||
+                "Loan request failed";
+            alert(msg);
         }
     };
 
@@ -98,33 +98,42 @@ const LoanSection = () => {
             return;
         }
 
-        const debt = await getUserDebt(phone);
-
-        if (Number(amount) > Number(debt)) {
-            alert(`Cannot repay more than outstanding debt (${debt})`);
-            return;
-        }
-
         try {
-            await repayLoan(phone, amount);
+            const normalized = phone.trim();
+            const debt = await getUserDebt(normalized);
+
+            if (Number(amount) > Number(debt)) {
+                alert(`Cannot repay more than outstanding debt (${debt})`);
+                return;
+            }
+
+            await repayLoan(normalized, amount);
             alert("Loan repaid");
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Repay failed");
+            const msg =
+                err?.error?.message ||
+                err?.data?.message ||
+                err?.reason ||
+                err?.message ||
+                "Repay failed";
+            alert(msg);
         }
     };
 
     // ✅ Max borrowable
     const handleMaxBorrowable = async () => {
         if (!phone) return alert("Enter phone first");
-        const value = await maxBorrowable(phone);
+        const normalized = phone.trim();
+        const value = await maxBorrowable(normalized);
         setMax(value);
     };
 
     // ✅ Repay full
     const handleRepayFull = async () => {
         if (!phone) return alert("Enter phone first");
-        const debt = await getUserDebt(phone);
+        const normalized = phone.trim();
+        const debt = await getUserDebt(normalized);
         setAmount(debt);
     };
 

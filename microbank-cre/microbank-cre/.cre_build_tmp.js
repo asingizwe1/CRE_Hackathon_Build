@@ -13831,21 +13831,11 @@ var sendErrorResponse = (error) => {
   }
   hostBindings.sendResponse(payload);
 };
-var postNotify = (sendRequester, event) => {
-  const bodyBytes = new TextEncoder().encode(JSON.stringify({
-    userId: event.userId,
-    eventType: event.__name__,
-    netAmount: event.netAmount,
-    feeAmount: event.feeAmount,
-    usdtAmount: event.usdtAmount,
-    liquidAmount: event.liquidAmount,
-    amount: event.amount,
-    totalDebt: event.totalDebt,
-    debtCleared: event.debtCleared
-  }));
+var postNotifyLatest = (sendRequester) => {
+  const bodyBytes = new TextEncoder().encode(JSON.stringify({}));
   const body = Buffer.from(bodyBytes).toString("base64");
   const req = {
-    url: "https://cre-hackathon-build.onrender.com/notify",
+    url: "https://cre-hackathon-build.onrender.com/notify-latest",
     method: "POST",
     body,
     headers: {
@@ -13861,20 +13851,8 @@ var postNotify = (sendRequester, event) => {
   return { statusCode: resp.statusCode, bodyText };
 };
 var onCronTrigger = (runtime2) => {
-  const eventType = process.env.EVENT_TYPE || "DepositRecorded";
-  const event = {
-    __name__: eventType,
-    userId: "0xtest_user_id",
-    netAmount: 95,
-    feeAmount: 5,
-    usdtAmount: 5,
-    liquidAmount: 5,
-    amount: 50,
-    totalDebt: 50,
-    debtCleared: 50
-  };
   const httpClient = new ClientCapability;
-  const result = httpClient.sendRequest(runtime2, postNotify, consensusIdenticalAggregation())(event).result();
+  const result = httpClient.sendRequest(runtime2, postNotifyLatest, consensusIdenticalAggregation())().result();
   runtime2.log(`Notify status: ${result.statusCode}`);
   runtime2.log(`Notify body: ${result.bodyText}`);
   return result.bodyText;
