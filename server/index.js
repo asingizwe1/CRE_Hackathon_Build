@@ -112,8 +112,8 @@ app.post("/resolve", (req, res) => {
 
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ error: "missing userId" });
-
-    const phone = store[userId] || null;
+    const normalizedId = String(userId).toLowerCase();
+    const phone = store[normalizedId] || null;
     return res.json({ phone });
 });
 
