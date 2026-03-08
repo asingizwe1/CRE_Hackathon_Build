@@ -47,7 +47,6 @@ var require_browser = __commonJS((exports, module) => {
   exports.Request = globalObject.Request;
   exports.Response = globalObject.Response;
 });
-var import_node_fetch = __toESM(require_browser(), 1);
 function isMessage(arg, schema) {
   const isMessage2 = arg !== null && typeof arg == "object" && "$typeName" in arg && typeof arg.$typeName == "string";
   if (!isMessage2) {
@@ -3065,6 +3064,23 @@ function fileDesc(b64, imports) {
   return reg.getFile(root.name);
 }
 var file_google_protobuf_timestamp = /* @__PURE__ */ fileDesc("Ch9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvEg9nb29nbGUucHJvdG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MYAiABKAVChQEKE2NvbS5nb29nbGUucHJvdG9idWZCDlRpbWVzdGFtcFByb3RvUAFaMmdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2tub3duL3RpbWVzdGFtcHBi+AEBogIDR1BCqgIeR29vZ2xlLlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM");
+var TimestampSchema = /* @__PURE__ */ messageDesc(file_google_protobuf_timestamp, 0);
+function timestampFromDate(date) {
+  return timestampFromMs(date.getTime());
+}
+function timestampDate(timestamp) {
+  return new Date(timestampMs(timestamp));
+}
+function timestampFromMs(timestampMs) {
+  const seconds = Math.floor(timestampMs / 1000);
+  return create(TimestampSchema, {
+    seconds: protoInt64.parse(seconds),
+    nanos: (timestampMs - seconds * 1000) * 1e6
+  });
+}
+function timestampMs(timestamp) {
+  return Number(timestamp.seconds) * 1000 + Math.round(timestamp.nanos / 1e6);
+}
 var file_google_protobuf_any = /* @__PURE__ */ fileDesc("Chlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvEg9nb29nbGUucHJvdG9idWYiJgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQnYKE2NvbS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAFaLGdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2tub3duL2FueXBiogIDR1BCqgIeR29vZ2xlLlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM");
 var AnySchema = /* @__PURE__ */ messageDesc(file_google_protobuf_any, 0);
 var LEGACY_REQUIRED2 = 3;
@@ -3247,8 +3263,34 @@ function anyPack(schema, message, into) {
   into.typeUrl = typeNameToUrl(message.$typeName);
   return ret ? into : undefined;
 }
+function anyIs(any, descOrTypeName) {
+  if (any.typeUrl === "") {
+    return false;
+  }
+  const want = typeof descOrTypeName == "string" ? descOrTypeName : descOrTypeName.typeName;
+  const got = typeUrlToName(any.typeUrl);
+  return want === got;
+}
+function anyUnpack(any, registryOrMessageDesc) {
+  if (any.typeUrl === "") {
+    return;
+  }
+  const desc = registryOrMessageDesc.kind == "message" ? registryOrMessageDesc : registryOrMessageDesc.getMessage(typeUrlToName(any.typeUrl));
+  if (!desc || !anyIs(any, desc)) {
+    return;
+  }
+  return fromBinary(desc, any.value);
+}
 function typeNameToUrl(name) {
   return `type.googleapis.com/${name}`;
+}
+function typeUrlToName(url) {
+  const slash = url.lastIndexOf("/");
+  const name = slash >= 0 ? url.substring(slash + 1) : url;
+  if (!name.length) {
+    throw new Error(`invalid type url: ${url}`);
+  }
+  return name;
 }
 var file_google_protobuf_duration = /* @__PURE__ */ fileDesc("Ch5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8SD2dvb2dsZS5wcm90b2J1ZiIqCghEdXJhdGlvbhIPCgdzZWNvbmRzGAEgASgDEg0KBW5hbm9zGAIgASgFQoMBChNjb20uZ29vZ2xlLnByb3RvYnVmQg1EdXJhdGlvblByb3RvUAFaMWdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2tub3duL2R1cmF0aW9ucGL4AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw");
 var file_google_protobuf_empty = /* @__PURE__ */ fileDesc("Chtnb29nbGUvcHJvdG9idWYvZW1wdHkucHJvdG8SD2dvb2dsZS5wcm90b2J1ZiIHCgVFbXB0eUJ9ChNjb20uZ29vZ2xlLnByb3RvYnVmQgpFbXB0eVByb3RvUAFaLmdvb2dsZS5nb2xhbmcub3JnL3Byb3RvYnVmL3R5cGVzL2tub3duL2VtcHR5cGL4AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw");
@@ -3771,8 +3813,25 @@ function listValueFromJson(listValue, json) {
   }
 }
 var file_values_v1_values = /* @__PURE__ */ fileDesc("ChZ2YWx1ZXMvdjEvdmFsdWVzLnByb3RvEgl2YWx1ZXMudjEigQMKBVZhbHVlEhYKDHN0cmluZ192YWx1ZRgBIAEoCUgAEhQKCmJvb2xfdmFsdWUYAiABKAhIABIVCgtieXRlc192YWx1ZRgDIAEoDEgAEiMKCW1hcF92YWx1ZRgEIAEoCzIOLnZhbHVlcy52MS5NYXBIABIlCgpsaXN0X3ZhbHVlGAUgASgLMg8udmFsdWVzLnYxLkxpc3RIABIrCg1kZWNpbWFsX3ZhbHVlGAYgASgLMhIudmFsdWVzLnYxLkRlY2ltYWxIABIZCgtpbnQ2NF92YWx1ZRgHIAEoA0ICMABIABIpCgxiaWdpbnRfdmFsdWUYCSABKAsyES52YWx1ZXMudjEuQmlnSW50SAASMAoKdGltZV92YWx1ZRgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXBIABIXCg1mbG9hdDY0X3ZhbHVlGAsgASgBSAASGgoMdWludDY0X3ZhbHVlGAwgASgEQgIwAEgAQgcKBXZhbHVlSgQICBAJIisKBkJpZ0ludBIPCgdhYnNfdmFsGAEgASgMEhAKBHNpZ24YAiABKANCAjAAInIKA01hcBIqCgZmaWVsZHMYASADKAsyGi52YWx1ZXMudjEuTWFwLkZpZWxkc0VudHJ5Gj8KC0ZpZWxkc0VudHJ5EgsKA2tleRgBIAEoCRIfCgV2YWx1ZRgCIAEoCzIQLnZhbHVlcy52MS5WYWx1ZToCOAEiKAoETGlzdBIgCgZmaWVsZHMYAiADKAsyEC52YWx1ZXMudjEuVmFsdWUiQwoHRGVjaW1hbBImCgtjb2VmZmljaWVudBgBIAEoCzIRLnZhbHVlcy52MS5CaWdJbnQSEAoIZXhwb25lbnQYAiABKAVCYQoNY29tLnZhbHVlcy52MUILVmFsdWVzUHJvdG9QAaICA1ZYWKoCCVZhbHVlcy5WMcoCCVZhbHVlc1xWMeICFVZhbHVlc1xWMVxHUEJNZXRhZGF0YeoCClZhbHVlczo6VjFiBnByb3RvMw", [file_google_protobuf_timestamp]);
+var ValueSchema2 = /* @__PURE__ */ messageDesc(file_values_v1_values, 0);
+var BigIntSchema = /* @__PURE__ */ messageDesc(file_values_v1_values, 1);
+var MapSchema = /* @__PURE__ */ messageDesc(file_values_v1_values, 2);
+var ListSchema = /* @__PURE__ */ messageDesc(file_values_v1_values, 3);
+var DecimalSchema = /* @__PURE__ */ messageDesc(file_values_v1_values, 4);
 var file_sdk_v1alpha_sdk = /* @__PURE__ */ fileDesc("ChVzZGsvdjFhbHBoYS9zZGsucHJvdG8SC3Nkay52MWFscGhhIrQBChVTaW1wbGVDb25zZW5zdXNJbnB1dHMSIQoFdmFsdWUYASABKAsyEC52YWx1ZXMudjEuVmFsdWVIABIPCgVlcnJvchgCIAEoCUgAEjUKC2Rlc2NyaXB0b3JzGAMgASgLMiAuc2RrLnYxYWxwaGEuQ29uc2Vuc3VzRGVzY3JpcHRvchIhCgdkZWZhdWx0GAQgASgLMhAudmFsdWVzLnYxLlZhbHVlQg0KC29ic2VydmF0aW9uIpABCglGaWVsZHNNYXASMgoGZmllbGRzGAEgAygLMiIuc2RrLnYxYWxwaGEuRmllbGRzTWFwLkZpZWxkc0VudHJ5Gk8KC0ZpZWxkc0VudHJ5EgsKA2tleRgBIAEoCRIvCgV2YWx1ZRgCIAEoCzIgLnNkay52MWFscGhhLkNvbnNlbnN1c0Rlc2NyaXB0b3I6AjgBIoYBChNDb25zZW5zdXNEZXNjcmlwdG9yEjMKC2FnZ3JlZ2F0aW9uGAEgASgOMhwuc2RrLnYxYWxwaGEuQWdncmVnYXRpb25UeXBlSAASLAoKZmllbGRzX21hcBgCIAEoCzIWLnNkay52MWFscGhhLkZpZWxkc01hcEgAQgwKCmRlc2NyaXB0b3IiagoNUmVwb3J0UmVxdWVzdBIXCg9lbmNvZGVkX3BheWxvYWQYASABKAwSFAoMZW5jb2Rlcl9uYW1lGAIgASgJEhQKDHNpZ25pbmdfYWxnbxgDIAEoCRIUCgxoYXNoaW5nX2FsZ28YBCABKAkilwEKDlJlcG9ydFJlc3BvbnNlEhUKDWNvbmZpZ19kaWdlc3QYASABKAwSEgoGc2VxX25yGAIgASgEQgIwABIWCg5yZXBvcnRfY29udGV4dBgDIAEoDBISCgpyYXdfcmVwb3J0GAQgASgMEi4KBHNpZ3MYBSADKAsyIC5zZGsudjFhbHBoYS5BdHRyaWJ1dGVkU2lnbmF0dXJlIjsKE0F0dHJpYnV0ZWRTaWduYXR1cmUSEQoJc2lnbmF0dXJlGAEgASgMEhEKCXNpZ25lcl9pZBgCIAEoDSJrChFDYXBhYmlsaXR5UmVxdWVzdBIKCgJpZBgBIAEoCRIlCgdwYXlsb2FkGAIgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueRIOCgZtZXRob2QYAyABKAkSEwoLY2FsbGJhY2tfaWQYBCABKAUiWgoSQ2FwYWJpbGl0eVJlc3BvbnNlEicKB3BheWxvYWQYASABKAsyFC5nb29nbGUucHJvdG9idWYuQW55SAASDwoFZXJyb3IYAiABKAlIAEIKCghyZXNwb25zZSJYChNUcmlnZ2VyU3Vic2NyaXB0aW9uEgoKAmlkGAEgASgJEiUKB3BheWxvYWQYAiABKAsyFC5nb29nbGUucHJvdG9idWYuQW55Eg4KBm1ldGhvZBgDIAEoCSJVChpUcmlnZ2VyU3Vic2NyaXB0aW9uUmVxdWVzdBI3Cg1zdWJzY3JpcHRpb25zGAEgAygLMiAuc2RrLnYxYWxwaGEuVHJpZ2dlclN1YnNjcmlwdGlvbiJACgdUcmlnZ2VyEg4KAmlkGAEgASgEQgIwABIlCgdwYXlsb2FkGAIgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSInChhBd2FpdENhcGFiaWxpdGllc1JlcXVlc3QSCwoDaWRzGAEgAygFIrgBChlBd2FpdENhcGFiaWxpdGllc1Jlc3BvbnNlEkgKCXJlc3BvbnNlcxgBIAMoCzI1LnNkay52MWFscGhhLkF3YWl0Q2FwYWJpbGl0aWVzUmVzcG9uc2UuUmVzcG9uc2VzRW50cnkaUQoOUmVzcG9uc2VzRW50cnkSCwoDa2V5GAEgASgFEi4KBXZhbHVlGAIgASgLMh8uc2RrLnYxYWxwaGEuQ2FwYWJpbGl0eVJlc3BvbnNlOgI4ASKgAQoORXhlY3V0ZVJlcXVlc3QSDgoGY29uZmlnGAEgASgMEisKCXN1YnNjcmliZRgCIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUgAEicKB3RyaWdnZXIYAyABKAsyFC5zZGsudjFhbHBoYS5UcmlnZ2VySAASHQoRbWF4X3Jlc3BvbnNlX3NpemUYBCABKARCAjAAQgkKB3JlcXVlc3QimQEKD0V4ZWN1dGlvblJlc3VsdBIhCgV2YWx1ZRgBIAEoCzIQLnZhbHVlcy52MS5WYWx1ZUgAEg8KBWVycm9yGAIgASgJSAASSAoVdHJpZ2dlcl9zdWJzY3JpcHRpb25zGAMgASgLMicuc2RrLnYxYWxwaGEuVHJpZ2dlclN1YnNjcmlwdGlvblJlcXVlc3RIAEIICgZyZXN1bHQiVgoRR2V0U2VjcmV0c1JlcXVlc3QSLAoIcmVxdWVzdHMYASADKAsyGi5zZGsudjFhbHBoYS5TZWNyZXRSZXF1ZXN0EhMKC2NhbGxiYWNrX2lkGAIgASgFIiIKE0F3YWl0U2VjcmV0c1JlcXVlc3QSCwoDaWRzGAEgAygFIqsBChRBd2FpdFNlY3JldHNSZXNwb25zZRJDCglyZXNwb25zZXMYASADKAsyMC5zZGsudjFhbHBoYS5Bd2FpdFNlY3JldHNSZXNwb25zZS5SZXNwb25zZXNFbnRyeRpOCg5SZXNwb25zZXNFbnRyeRILCgNrZXkYASABKAUSKwoFdmFsdWUYAiABKAsyHC5zZGsudjFhbHBoYS5TZWNyZXRSZXNwb25zZXM6AjgBIi4KDVNlY3JldFJlcXVlc3QSCgoCaWQYASABKAkSEQoJbmFtZXNwYWNlGAIgASgJIkUKBlNlY3JldBIKCgJpZBgBIAEoCRIRCgluYW1lc3BhY2UYAiABKAkSDQoFb3duZXIYAyABKAkSDQoFdmFsdWUYBCABKAkiSgoLU2VjcmV0RXJyb3ISCgoCaWQYASABKAkSEQoJbmFtZXNwYWNlGAIgASgJEg0KBW93bmVyGAMgASgJEg0KBWVycm9yGAQgASgJIm4KDlNlY3JldFJlc3BvbnNlEiUKBnNlY3JldBgBIAEoCzITLnNkay52MWFscGhhLlNlY3JldEgAEikKBWVycm9yGAIgASgLMhguc2RrLnYxYWxwaGEuU2VjcmV0RXJyb3JIAEIKCghyZXNwb25zZSJBCg9TZWNyZXRSZXNwb25zZXMSLgoJcmVzcG9uc2VzGAEgAygLMhsuc2RrLnYxYWxwaGEuU2VjcmV0UmVzcG9uc2UquAEKD0FnZ3JlZ2F0aW9uVHlwZRIgChxBR0dSRUdBVElPTl9UWVBFX1VOU1BFQ0lGSUVEEAASGwoXQUdHUkVHQVRJT05fVFlQRV9NRURJQU4QARIeChpBR0dSRUdBVElPTl9UWVBFX0lERU5USUNBTBACEiIKHkFHR1JFR0FUSU9OX1RZUEVfQ09NTU9OX1BSRUZJWBADEiIKHkFHR1JFR0FUSU9OX1RZUEVfQ09NTU9OX1NVRkZJWBAEKjkKBE1vZGUSFAoQTU9ERV9VTlNQRUNJRklFRBAAEgwKCE1PREVfRE9OEAESDQoJTU9ERV9OT0RFEAJCaAoPY29tLnNkay52MWFscGhhQghTZGtQcm90b1ABogIDU1hYqgILU2RrLlYxYWxwaGHKAgtTZGtcVjFhbHBoYeICF1Nka1xWMWFscGhhXEdQQk1ldGFkYXRh6gIMU2RrOjpWMWFscGhhYgZwcm90bzM", [file_google_protobuf_any, file_google_protobuf_empty, file_values_v1_values]);
+var SimpleConsensusInputsSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 0);
+var ReportRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 3);
+var ReportResponseSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 4);
+var CapabilityRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 6);
+var TriggerSubscriptionRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 9);
+var AwaitCapabilitiesRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 11);
+var AwaitCapabilitiesResponseSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 12);
+var ExecuteRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 13);
 var ExecutionResultSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 14);
+var GetSecretsRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 15);
+var AwaitSecretsRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 16);
+var AwaitSecretsResponseSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 17);
+var SecretRequestSchema = /* @__PURE__ */ messageDesc(file_sdk_v1alpha_sdk, 18);
 var AggregationType;
 (function(AggregationType2) {
   AggregationType2[AggregationType2["UNSPECIFIED"] = 0] = "UNSPECIFIED";
@@ -3805,6 +3864,16 @@ var TxStatus;
   TxStatus2[TxStatus2["REVERTED"] = 1] = "REVERTED";
   TxStatus2[TxStatus2["SUCCESS"] = 2] = "SUCCESS";
 })(TxStatus || (TxStatus = {}));
+
+class Report {
+  report;
+  constructor(report) {
+    this.report = report.$typeName ? report : fromJson(ReportResponseSchema, report);
+  }
+  x_generatedCodeOnly_unwrap() {
+    return this.report;
+  }
+}
 var file_capabilities_networking_http_v1alpha_client = /* @__PURE__ */ fileDesc("CjFjYXBhYmlsaXRpZXMvbmV0d29ya2luZy9odHRwL3YxYWxwaGEvY2xpZW50LnByb3RvEiRjYXBhYmlsaXRpZXMubmV0d29ya2luZy5odHRwLnYxYWxwaGEiSgoNQ2FjaGVTZXR0aW5ncxINCgVzdG9yZRgBIAEoCBIqCgdtYXhfYWdlGAIgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uIh4KDEhlYWRlclZhbHVlcxIOCgZ2YWx1ZXMYASADKAki7wMKB1JlcXVlc3QSCwoDdXJsGAEgASgJEg4KBm1ldGhvZBgCIAEoCRJPCgdoZWFkZXJzGAMgAygLMjouY2FwYWJpbGl0aWVzLm5ldHdvcmtpbmcuaHR0cC52MWFscGhhLlJlcXVlc3QuSGVhZGVyc0VudHJ5QgIYARIMCgRib2R5GAQgASgMEioKB3RpbWVvdXQYBSABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24SSwoOY2FjaGVfc2V0dGluZ3MYBiABKAsyMy5jYXBhYmlsaXRpZXMubmV0d29ya2luZy5odHRwLnYxYWxwaGEuQ2FjaGVTZXR0aW5ncxJWCg1tdWx0aV9oZWFkZXJzGAcgAygLMj8uY2FwYWJpbGl0aWVzLm5ldHdvcmtpbmcuaHR0cC52MWFscGhhLlJlcXVlc3QuTXVsdGlIZWFkZXJzRW50cnkaLgoMSGVhZGVyc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaZwoRTXVsdGlIZWFkZXJzRW50cnkSCwoDa2V5GAEgASgJEkEKBXZhbHVlGAIgASgLMjIuY2FwYWJpbGl0aWVzLm5ldHdvcmtpbmcuaHR0cC52MWFscGhhLkhlYWRlclZhbHVlczoCOAEi8QIKCFJlc3BvbnNlEhMKC3N0YXR1c19jb2RlGAEgASgNElAKB2hlYWRlcnMYAiADKAsyOy5jYXBhYmlsaXRpZXMubmV0d29ya2luZy5odHRwLnYxYWxwaGEuUmVzcG9uc2UuSGVhZGVyc0VudHJ5QgIYARIMCgRib2R5GAMgASgMElcKDW11bHRpX2hlYWRlcnMYBCADKAsyQC5jYXBhYmlsaXRpZXMubmV0d29ya2luZy5odHRwLnYxYWxwaGEuUmVzcG9uc2UuTXVsdGlIZWFkZXJzRW50cnkaLgoMSGVhZGVyc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaZwoRTXVsdGlIZWFkZXJzRW50cnkSCwoDa2V5GAEgASgJEkEKBXZhbHVlGAIgASgLMjIuY2FwYWJpbGl0aWVzLm5ldHdvcmtpbmcuaHR0cC52MWFscGhhLkhlYWRlclZhbHVlczoCOAEymAEKBkNsaWVudBJsCgtTZW5kUmVxdWVzdBItLmNhcGFiaWxpdGllcy5uZXR3b3JraW5nLmh0dHAudjFhbHBoYS5SZXF1ZXN0Gi4uY2FwYWJpbGl0aWVzLm5ldHdvcmtpbmcuaHR0cC52MWFscGhhLlJlc3BvbnNlGiCCtRgcCAISGGh0dHAtYWN0aW9uc0AxLjAuMC1hbHBoYULqAQooY29tLmNhcGFiaWxpdGllcy5uZXR3b3JraW5nLmh0dHAudjFhbHBoYUILQ2xpZW50UHJvdG9QAaICA0NOSKoCJENhcGFiaWxpdGllcy5OZXR3b3JraW5nLkh0dHAuVjFhbHBoYcoCJENhcGFiaWxpdGllc1xOZXR3b3JraW5nXEh0dHBcVjFhbHBoYeICMENhcGFiaWxpdGllc1xOZXR3b3JraW5nXEh0dHBcVjFhbHBoYVxHUEJNZXRhZGF0YeoCJ0NhcGFiaWxpdGllczo6TmV0d29ya2luZzo6SHR0cDo6VjFhbHBoYWIGcHJvdG8z", [file_google_protobuf_duration, file_tools_generator_v1alpha_cre_metadata]);
 var RequestSchema = /* @__PURE__ */ messageDesc(file_capabilities_networking_http_v1alpha_client, 2);
 var ResponseSchema = /* @__PURE__ */ messageDesc(file_capabilities_networking_http_v1alpha_client, 3);
@@ -3868,6 +3937,45 @@ var KeyType;
   KeyType2[KeyType2["UNSPECIFIED"] = 0] = "UNSPECIFIED";
   KeyType2[KeyType2["ECDSA_EVM"] = 1] = "ECDSA_EVM";
 })(KeyType || (KeyType = {}));
+var file_capabilities_scheduler_cron_v1_trigger = /* @__PURE__ */ fileDesc("CixjYXBhYmlsaXRpZXMvc2NoZWR1bGVyL2Nyb24vdjEvdHJpZ2dlci5wcm90bxIeY2FwYWJpbGl0aWVzLnNjaGVkdWxlci5jcm9uLnYxIhoKBkNvbmZpZxIQCghzY2hlZHVsZRgBIAEoCSJHCgdQYXlsb2FkEjwKGHNjaGVkdWxlZF9leGVjdXRpb25fdGltZRgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiNQoNTGVnYWN5UGF5bG9hZBIgChhzY2hlZHVsZWRfZXhlY3V0aW9uX3RpbWUYASABKAk6AhgBMvUBCgRDcm9uElwKB1RyaWdnZXISJi5jYXBhYmlsaXRpZXMuc2NoZWR1bGVyLmNyb24udjEuQ29uZmlnGicuY2FwYWJpbGl0aWVzLnNjaGVkdWxlci5jcm9uLnYxLlBheWxvYWQwARJzCg1MZWdhY3lUcmlnZ2VyEiYuY2FwYWJpbGl0aWVzLnNjaGVkdWxlci5jcm9uLnYxLkNvbmZpZxotLmNhcGFiaWxpdGllcy5zY2hlZHVsZXIuY3Jvbi52MS5MZWdhY3lQYXlsb2FkIgmIAgGKtRgCCAEwARoagrUYFggBEhJjcm9uLXRyaWdnZXJAMS4wLjBCzQEKImNvbS5jYXBhYmlsaXRpZXMuc2NoZWR1bGVyLmNyb24udjFCDFRyaWdnZXJQcm90b1ABogIDQ1NDqgIeQ2FwYWJpbGl0aWVzLlNjaGVkdWxlci5Dcm9uLlYxygIeQ2FwYWJpbGl0aWVzXFNjaGVkdWxlclxDcm9uXFYx4gIqQ2FwYWJpbGl0aWVzXFNjaGVkdWxlclxDcm9uXFYxXEdQQk1ldGFkYXRh6gIhQ2FwYWJpbGl0aWVzOjpTY2hlZHVsZXI6OkNyb246OlYxYgZwcm90bzM", [file_google_protobuf_timestamp, file_tools_generator_v1alpha_cre_metadata]);
+var ConfigSchema2 = /* @__PURE__ */ messageDesc(file_capabilities_scheduler_cron_v1_trigger, 0);
+var PayloadSchema2 = /* @__PURE__ */ messageDesc(file_capabilities_scheduler_cron_v1_trigger, 1);
+
+class CronCapability {
+  static CAPABILITY_ID = "cron-trigger@1.0.0";
+  static CAPABILITY_NAME = "cron-trigger";
+  static CAPABILITY_VERSION = "1.0.0";
+  trigger(config) {
+    const capabilityId = CronCapability.CAPABILITY_ID;
+    return new CronTrigger(config, capabilityId, "Trigger");
+  }
+}
+
+class CronTrigger {
+  _capabilityId;
+  _method;
+  config;
+  constructor(config, _capabilityId, _method) {
+    this._capabilityId = _capabilityId;
+    this._method = _method;
+    this.config = config.$typeName ? config : fromJson(ConfigSchema2, config);
+  }
+  capabilityId() {
+    return this._capabilityId;
+  }
+  method() {
+    return this._method;
+  }
+  outputSchema() {
+    return PayloadSchema2;
+  }
+  configAsAny() {
+    return anyPack(ConfigSchema2, this.config);
+  }
+  adapt(rawOutput) {
+    return rawOutput;
+  }
+}
 var lookup = [];
 var revLookup = [];
 var code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -5184,6 +5292,10 @@ var transcode = notimpl("transcode");
 var prepareRuntime = () => {
   globalThis.Buffer = Buffer2;
 };
+var handler = (trigger, fn) => ({
+  trigger,
+  fn
+});
 prepareRuntime();
 var LAST_FINALIZED_BLOCK_NUMBER = {
   absVal: Buffer.from([3]).toString("base64"),
@@ -8904,6 +9016,279 @@ class UInt64 {
     return safe ? new UInt64(this.value / i2.value) : new UInt64(BigInt.asUintN(64, this.value / i2.value));
   }
 }
+
+class Decimal {
+  coeffecient;
+  exponent;
+  static parse(s) {
+    const m = /^([+-])?(\d*)(?:\.(\d*))?$/.exec(s.trim());
+    if (!m || m[2] === "" && (m[3] === undefined || m[3] === ""))
+      throw new Error("invalid decimal string");
+    const signStr = m[1] ?? "+";
+    const intPart = m[2] ?? "0";
+    let fracPart = m[3] ?? "";
+    while (fracPart.length > 0 && fracPart[fracPart.length - 1] === "0") {
+      fracPart = fracPart.slice(0, -1);
+    }
+    const exponent = fracPart.length === 0 ? 0 : -fracPart.length;
+    const digits = intPart + fracPart || "0";
+    const coeffecient = BigInt((signStr === "-" ? "-" : "") + digits);
+    return new Decimal(coeffecient, exponent);
+  }
+  constructor(coeffecient, exponent) {
+    this.coeffecient = coeffecient;
+    this.exponent = exponent;
+  }
+}
+
+class Value {
+  value;
+  static from(value) {
+    return new Value(value);
+  }
+  static wrap(value) {
+    return new Value(value);
+  }
+  constructor(value) {
+    if (value instanceof Value) {
+      this.value = value.value;
+    } else if (isValueProto(value)) {
+      this.value = value;
+    } else {
+      this.value = Value.wrapInternal(value);
+    }
+  }
+  proto() {
+    return this.value;
+  }
+  static toUint8Array(input) {
+    return input instanceof Uint8Array ? input : new Uint8Array(input);
+  }
+  static bigintToBytesBE(abs) {
+    if (abs === 0n)
+      return new Uint8Array;
+    let hex = abs.toString(16);
+    if (hex.length % 2 === 1)
+      hex = "0" + hex;
+    const len2 = hex.length / 2;
+    const out = new Uint8Array(len2);
+    for (let i2 = 0;i2 < len2; i2++) {
+      out[i2] = parseInt(hex.slice(i2 * 2, i2 * 2 + 2), 16);
+    }
+    return out;
+  }
+  static bigIntToProtoBigInt(v) {
+    const sign = v === 0n ? 0n : v < 0n ? -1n : 1n;
+    const abs = v < 0n ? -v : v;
+    return create(BigIntSchema, {
+      absVal: Value.bigintToBytesBE(abs),
+      sign
+    });
+  }
+  static toTimestamp(d) {
+    const date = d instanceof Date ? d : new Date(d);
+    return timestampFromDate(date);
+  }
+  static isPlainObject(v) {
+    return typeof v === "object" && v !== null && v.constructor === Object;
+  }
+  static isObject(v) {
+    return typeof v === "object" && v !== null;
+  }
+  static wrapInternal(v) {
+    if (v === null || v === undefined)
+      throw new Error("cannot wrap null/undefined into Value");
+    if (v instanceof Value) {
+      return v.proto();
+    }
+    if (v instanceof Uint8Array)
+      return create(ValueSchema2, { value: { case: "bytesValue", value: v } });
+    if (v instanceof ArrayBuffer)
+      return create(ValueSchema2, {
+        value: { case: "bytesValue", value: Value.toUint8Array(v) }
+      });
+    if (v instanceof Date)
+      return create(ValueSchema2, {
+        value: { case: "timeValue", value: Value.toTimestamp(v) }
+      });
+    if (v instanceof Int64) {
+      return create(ValueSchema2, {
+        value: { case: "int64Value", value: v.value }
+      });
+    }
+    if (v instanceof UInt64) {
+      return create(ValueSchema2, {
+        value: { case: "uint64Value", value: v.value }
+      });
+    }
+    if (v instanceof Decimal) {
+      const decimalProto = create(DecimalSchema, {
+        coefficient: Value.bigIntToProtoBigInt(v.coeffecient),
+        exponent: v.exponent
+      });
+      return create(ValueSchema2, {
+        value: { case: "decimalValue", value: decimalProto }
+      });
+    }
+    switch (typeof v) {
+      case "string":
+        return create(ValueSchema2, {
+          value: { case: "stringValue", value: v }
+        });
+      case "boolean":
+        return create(ValueSchema2, { value: { case: "boolValue", value: v } });
+      case "bigint": {
+        return create(ValueSchema2, {
+          value: { case: "bigintValue", value: Value.bigIntToProtoBigInt(v) }
+        });
+      }
+      case "number": {
+        return create(ValueSchema2, {
+          value: { case: "float64Value", value: v }
+        });
+      }
+      case "object":
+        break;
+      default:
+        throw new Error(`unsupported type: ${typeof v}`);
+    }
+    if (Array.isArray(v)) {
+      const fields2 = v.map(Value.wrapInternal);
+      const list = create(ListSchema, { fields: fields2 });
+      return create(ValueSchema2, { value: { case: "listValue", value: list } });
+    }
+    if (Value.isPlainObject(v)) {
+      const fields2 = {};
+      for (const [k, vv] of Object.entries(v)) {
+        fields2[k] = Value.wrapInternal(vv);
+      }
+      const map = create(MapSchema, { fields: fields2 });
+      return create(ValueSchema2, { value: { case: "mapValue", value: map } });
+    }
+    if (Value.isObject(v) && v.constructor !== Object) {
+      const fields2 = {};
+      for (const [k, vv] of Object.entries(v)) {
+        fields2[k] = Value.wrapInternal(vv);
+      }
+      const map = create(MapSchema, { fields: fields2 });
+      return create(ValueSchema2, { value: { case: "mapValue", value: map } });
+    }
+    throw new Error("unsupported object instance");
+  }
+  unwrap() {
+    return unwrap(this.value);
+  }
+  unwrapToType(options) {
+    const unwrapped = this.unwrap();
+    if ("instance" in options) {
+      if (typeof unwrapped !== typeof options.instance) {
+        throw new Error(`Cannot unwrap to type ${typeof options.instance}`);
+      }
+      return unwrapped;
+    }
+    if (options.schema) {
+      return options.schema.parse(unwrapped);
+    }
+    const obj = options.factory();
+    if (typeof unwrapped === "object" && unwrapped !== null) {
+      Object.assign(obj, unwrapped);
+    } else {
+      throw new Error(`Cannot copy properties from primitive value to object instance. Use a schema instead.`);
+    }
+    return obj;
+  }
+}
+function unwrap(value) {
+  switch (value.value.case) {
+    case "stringValue":
+      return value.value.value;
+    case "boolValue":
+      return value.value.value;
+    case "bytesValue":
+      return value.value.value;
+    case "int64Value":
+      return new Int64(value.value.value);
+    case "uint64Value":
+      return new UInt64(value.value.value);
+    case "float64Value":
+      return value.value.value;
+    case "bigintValue": {
+      const bigIntValue = value.value.value;
+      const absVal = bigIntValue.absVal;
+      const sign = bigIntValue.sign;
+      let result = 0n;
+      for (const byte of absVal) {
+        result = result << 8n | BigInt(byte);
+      }
+      return sign < 0n ? -result : result;
+    }
+    case "timeValue": {
+      return timestampDate(value.value.value);
+    }
+    case "listValue": {
+      const list = value.value.value;
+      return list.fields.map(unwrap);
+    }
+    case "mapValue": {
+      const map = value.value.value;
+      const result = {};
+      for (const [key, val] of Object.entries(map.fields)) {
+        result[key] = unwrap(val);
+      }
+      return result;
+    }
+    case "decimalValue": {
+      const decimal = value.value.value;
+      const coefficient = decimal.coefficient;
+      const exponent = decimal.exponent;
+      if (!coefficient) {
+        return new Decimal(0n, 0);
+      }
+      let coeffBigInt;
+      const absVal = coefficient.absVal;
+      const sign = coefficient.sign;
+      let result = 0n;
+      for (const byte of absVal) {
+        result = result << 8n | BigInt(byte);
+      }
+      coeffBigInt = sign < 0n ? -result : result;
+      return new Decimal(coeffBigInt, exponent);
+    }
+    default:
+      throw new Error(`Unsupported value type: ${value.value.case}`);
+  }
+}
+function isValueProto(value) {
+  return value != null && typeof value.$typeName === "string" && value.$typeName === "values.v1.Value";
+}
+async function standardValidate(schema, input) {
+  let result = schema["~standard"].validate(input);
+  if (result instanceof Promise)
+    result = await result;
+  if (result.issues) {
+    const errorDetails = JSON.stringify(result.issues, null, 2);
+    throw new Error(`Config validation failed. Expectations were not matched:
+
+${errorDetails}`);
+  }
+  return result.value;
+}
+var defaultJsonParser = (config) => JSON.parse(Buffer.from(config).toString());
+var configHandler = async (request, { configParser, configSchema } = {}) => {
+  const config = request.config;
+  const parser = configParser || defaultJsonParser;
+  let intermediateConfig;
+  try {
+    intermediateConfig = parser(config);
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Failed to parse configuration: ${error.message}`);
+    } else {
+      throw new Error(`Failed to parse configuration: unknown error`);
+    }
+  }
+  return configSchema ? standardValidate(configSchema, intermediateConfig) : intermediateConfig;
+};
 var exports_external = {};
 __export(exports_external, {
   void: () => voidType,
@@ -12896,6 +13281,528 @@ var hostBindings = new Proxy({}, {
     return _hostBindings[prop];
   }
 });
+
+class ConsensusCapability {
+  static CAPABILITY_ID = "consensus@1.0.0-alpha";
+  static CAPABILITY_NAME = "consensus";
+  static CAPABILITY_VERSION = "1.0.0-alpha";
+  simple(runtime, input) {
+    let payload;
+    if (input.$typeName) {
+      payload = input;
+    } else {
+      payload = fromJson(SimpleConsensusInputsSchema, input);
+    }
+    const capabilityId = ConsensusCapability.CAPABILITY_ID;
+    const capabilityResponse = runtime.callCapability({
+      capabilityId,
+      method: "Simple",
+      payload,
+      inputSchema: SimpleConsensusInputsSchema,
+      outputSchema: ValueSchema2
+    });
+    return {
+      result: () => {
+        const result = capabilityResponse.result();
+        return result;
+      }
+    };
+  }
+  report(runtime, input) {
+    let payload;
+    if (input.$typeName) {
+      payload = input;
+    } else {
+      payload = fromJson(ReportRequestSchema, input);
+    }
+    const capabilityId = ConsensusCapability.CAPABILITY_ID;
+    const capabilityResponse = runtime.callCapability({
+      capabilityId,
+      method: "Report",
+      payload,
+      inputSchema: ReportRequestSchema,
+      outputSchema: ReportResponseSchema
+    });
+    return {
+      result: () => {
+        const result = capabilityResponse.result();
+        return new Report(result);
+      }
+    };
+  }
+}
+
+class CapabilityError extends Error {
+  name;
+  capabilityId;
+  method;
+  callbackId;
+  constructor(message, options) {
+    super(message);
+    this.name = "CapabilityError";
+    if (options) {
+      this.capabilityId = options.capabilityId;
+      this.method = options.method;
+      this.callbackId = options.callbackId;
+    }
+  }
+}
+
+class DonModeError extends Error {
+  constructor() {
+    super("cannot use Runtime inside RunInNodeMode");
+    this.name = "DonModeError";
+  }
+}
+
+class NodeModeError extends Error {
+  constructor() {
+    super("cannot use NodeRuntime outside RunInNodeMode");
+    this.name = "NodeModeError";
+  }
+}
+
+class SecretsError extends Error {
+  secretRequest;
+  error;
+  constructor(secretRequest, error) {
+    super(`secret retrieval failed for ${secretRequest.id || "unknown"} (namespace: ${secretRequest.namespace || "default"}): ${error}. Verify the secret name is correct and that the secret has been configured for this workflow`);
+    this.secretRequest = secretRequest;
+    this.error = error;
+    this.name = "SecretsError";
+  }
+}
+
+class BaseRuntimeImpl {
+  config;
+  nextCallId;
+  helpers;
+  maxResponseSize;
+  mode;
+  modeError;
+  constructor(config, nextCallId, helpers, maxResponseSize, mode) {
+    this.config = config;
+    this.nextCallId = nextCallId;
+    this.helpers = helpers;
+    this.maxResponseSize = maxResponseSize;
+    this.mode = mode;
+  }
+  callCapability({ capabilityId, method, payload, inputSchema, outputSchema }) {
+    if (this.modeError) {
+      return {
+        result: () => {
+          throw this.modeError;
+        }
+      };
+    }
+    const callbackId = this.allocateCallbackId();
+    const anyPayload = anyPack(inputSchema, payload);
+    const req = create(CapabilityRequestSchema, {
+      id: capabilityId,
+      method,
+      payload: anyPayload,
+      callbackId
+    });
+    if (!this.helpers.call(req)) {
+      return {
+        result: () => {
+          throw new CapabilityError(`Capability '${capabilityId}' not found: the host rejected the call to method '${method}'. Verify the capability ID is correct and the capability is available in this CRE environment`, {
+            callbackId,
+            method,
+            capabilityId
+          });
+        }
+      };
+    }
+    return {
+      result: () => this.awaitAndUnwrapCapabilityResponse(callbackId, capabilityId, method, outputSchema)
+    };
+  }
+  allocateCallbackId() {
+    const callbackId = this.nextCallId;
+    if (this.mode === Mode.DON) {
+      this.nextCallId++;
+    } else {
+      this.nextCallId--;
+    }
+    return callbackId;
+  }
+  awaitAndUnwrapCapabilityResponse(callbackId, capabilityId, method, outputSchema) {
+    const awaitRequest = create(AwaitCapabilitiesRequestSchema, {
+      ids: [callbackId]
+    });
+    const awaitResponse = this.helpers.await(awaitRequest, this.maxResponseSize);
+    const capabilityResponse = awaitResponse.responses[callbackId];
+    if (!capabilityResponse) {
+      throw new CapabilityError(`No response found for capability '${capabilityId}' method '${method}' (callback ID ${callbackId}): the host returned a response map that does not contain an entry for this call`, {
+        capabilityId,
+        method,
+        callbackId
+      });
+    }
+    const response = capabilityResponse.response;
+    switch (response.case) {
+      case "payload": {
+        try {
+          return anyUnpack(response.value, outputSchema);
+        } catch {
+          throw new CapabilityError(`Failed to deserialize response payload for capability '${capabilityId}' method '${method}': the response could not be unpacked into the expected output schema`, {
+            capabilityId,
+            method,
+            callbackId
+          });
+        }
+      }
+      case "error":
+        throw new CapabilityError(`Capability '${capabilityId}' method '${method}' returned an error: ${response.value}`, {
+          capabilityId,
+          method,
+          callbackId
+        });
+      default:
+        throw new CapabilityError(`Unexpected response type '${response.case}' for capability '${capabilityId}' method '${method}': expected 'payload' or 'error'`, {
+          capabilityId,
+          method,
+          callbackId
+        });
+    }
+  }
+  getNextCallId() {
+    return this.nextCallId;
+  }
+  now() {
+    return new Date(this.helpers.now());
+  }
+  log(message) {
+    this.helpers.log(message);
+  }
+}
+
+class NodeRuntimeImpl extends BaseRuntimeImpl {
+  _isNodeRuntime = true;
+  constructor(config, nextCallId, helpers, maxResponseSize) {
+    helpers.switchModes(Mode.NODE);
+    super(config, nextCallId, helpers, maxResponseSize, Mode.NODE);
+  }
+}
+
+class RuntimeImpl extends BaseRuntimeImpl {
+  nextNodeCallId = -1;
+  constructor(config, nextCallId, helpers, maxResponseSize) {
+    helpers.switchModes(Mode.DON);
+    super(config, nextCallId, helpers, maxResponseSize, Mode.DON);
+  }
+  runInNodeMode(fn, consensusAggregation, unwrapOptions) {
+    return (...args) => {
+      this.modeError = new DonModeError;
+      const nodeRuntime = new NodeRuntimeImpl(this.config, this.nextNodeCallId, this.helpers, this.maxResponseSize);
+      const consensusInput = this.prepareConsensusInput(consensusAggregation);
+      try {
+        const observation = fn(nodeRuntime, ...args);
+        this.captureObservation(consensusInput, observation, consensusAggregation.descriptor);
+      } catch (e) {
+        this.captureError(consensusInput, e);
+      } finally {
+        this.restoreDonMode(nodeRuntime);
+      }
+      return this.runConsensusAndWrap(consensusInput, unwrapOptions);
+    };
+  }
+  prepareConsensusInput(consensusAggregation) {
+    const consensusInput = create(SimpleConsensusInputsSchema, {
+      descriptors: consensusAggregation.descriptor
+    });
+    if (consensusAggregation.defaultValue) {
+      const defaultValue = Value.from(consensusAggregation.defaultValue).proto();
+      clearIgnoredFields(defaultValue, consensusAggregation.descriptor);
+      consensusInput.default = defaultValue;
+    }
+    return consensusInput;
+  }
+  captureObservation(consensusInput, observation, descriptor) {
+    const observationValue = Value.from(observation).proto();
+    clearIgnoredFields(observationValue, descriptor);
+    consensusInput.observation = {
+      case: "value",
+      value: observationValue
+    };
+  }
+  captureError(consensusInput, e) {
+    consensusInput.observation = {
+      case: "error",
+      value: e instanceof Error && e.message || String(e)
+    };
+  }
+  restoreDonMode(nodeRuntime) {
+    this.modeError = undefined;
+    this.nextNodeCallId = nodeRuntime.nextCallId;
+    nodeRuntime.modeError = new NodeModeError;
+    this.helpers.switchModes(Mode.DON);
+  }
+  runConsensusAndWrap(consensusInput, unwrapOptions) {
+    const consensus = new ConsensusCapability;
+    const call = consensus.simple(this, consensusInput);
+    return {
+      result: () => {
+        const result = call.result();
+        const wrappedValue = Value.wrap(result);
+        return unwrapOptions ? wrappedValue.unwrapToType(unwrapOptions) : wrappedValue.unwrap();
+      }
+    };
+  }
+  getSecret(request) {
+    if (this.modeError) {
+      return {
+        result: () => {
+          throw this.modeError;
+        }
+      };
+    }
+    const secretRequest = request.$typeName ? request : create(SecretRequestSchema, request);
+    const id = this.nextCallId;
+    this.nextCallId++;
+    const secretsReq = create(GetSecretsRequestSchema, {
+      callbackId: id,
+      requests: [secretRequest]
+    });
+    if (!this.helpers.getSecrets(secretsReq, this.maxResponseSize)) {
+      return {
+        result: () => {
+          throw new SecretsError(secretRequest, "host is not making the secrets request");
+        }
+      };
+    }
+    return {
+      result: () => this.awaitAndUnwrapSecret(id, secretRequest)
+    };
+  }
+  awaitAndUnwrapSecret(id, secretRequest) {
+    const awaitRequest = create(AwaitSecretsRequestSchema, { ids: [id] });
+    const awaitResponse = this.helpers.awaitSecrets(awaitRequest, this.maxResponseSize);
+    const secretsResponse = awaitResponse.responses[id];
+    if (!secretsResponse) {
+      throw new SecretsError(secretRequest, "no response");
+    }
+    const responses = secretsResponse.responses;
+    if (responses.length !== 1) {
+      throw new SecretsError(secretRequest, "invalid value returned from host");
+    }
+    const response = responses[0].response;
+    switch (response.case) {
+      case "secret":
+        return response.value;
+      case "error":
+        throw new SecretsError(secretRequest, response.value.error);
+      default:
+        throw new SecretsError(secretRequest, "cannot unmarshal returned value from host");
+    }
+  }
+  report(input) {
+    const consensus = new ConsensusCapability;
+    const call = consensus.report(this, input);
+    return {
+      result: () => call.result()
+    };
+  }
+}
+function clearIgnoredFields(value2, descriptor) {
+  if (!descriptor || !value2) {
+    return;
+  }
+  const fieldsMap = descriptor.descriptor?.case === "fieldsMap" ? descriptor.descriptor.value : undefined;
+  if (!fieldsMap) {
+    return;
+  }
+  if (value2.value?.case === "mapValue") {
+    const mapValue = value2.value.value;
+    if (!mapValue || !mapValue.fields) {
+      return;
+    }
+    for (const [key, val] of Object.entries(mapValue.fields)) {
+      const nestedDescriptor = fieldsMap.fields[key];
+      if (!nestedDescriptor) {
+        delete mapValue.fields[key];
+        continue;
+      }
+      const nestedFieldsMap = nestedDescriptor.descriptor?.case === "fieldsMap" ? nestedDescriptor.descriptor.value : undefined;
+      if (nestedFieldsMap && val.value?.case === "mapValue") {
+        clearIgnoredFields(val, nestedDescriptor);
+      }
+    }
+  }
+}
+
+class Runtime extends RuntimeImpl {
+  constructor(config, nextCallId, maxResponseSize) {
+    super(config, nextCallId, WasmRuntimeHelpers.getInstance(), maxResponseSize);
+  }
+}
+function toI32ResponseSize(maxResponseSize) {
+  if (maxResponseSize > 2147483647n || maxResponseSize < -2147483648n) {
+    throw new Error(`maxResponseSize ${maxResponseSize} exceeds i32 range. Expected a value between -2147483648 and 2147483647`);
+  }
+  return Math.trunc(Number(maxResponseSize));
+}
+
+class WasmRuntimeHelpers {
+  static instance;
+  constructor() {}
+  now() {
+    return hostBindings.now();
+  }
+  static getInstance() {
+    if (!WasmRuntimeHelpers.instance) {
+      WasmRuntimeHelpers.instance = new WasmRuntimeHelpers;
+    }
+    return WasmRuntimeHelpers.instance;
+  }
+  call(request) {
+    return hostBindings.callCapability(toBinary(CapabilityRequestSchema, request)) >= 0;
+  }
+  await(request, maxResponseSize) {
+    const responseSize = toI32ResponseSize(maxResponseSize);
+    const response = hostBindings.awaitCapabilities(toBinary(AwaitCapabilitiesRequestSchema, request), responseSize);
+    const responseBytes = Array.isArray(response) ? new Uint8Array(response) : response;
+    return fromBinary(AwaitCapabilitiesResponseSchema, responseBytes);
+  }
+  getSecrets(request, maxResponseSize) {
+    const responseSize = toI32ResponseSize(maxResponseSize);
+    return hostBindings.getSecrets(toBinary(GetSecretsRequestSchema, request), responseSize) >= 0;
+  }
+  awaitSecrets(request, maxResponseSize) {
+    const responseSize = toI32ResponseSize(maxResponseSize);
+    const response = hostBindings.awaitSecrets(toBinary(AwaitSecretsRequestSchema, request), responseSize);
+    const responseBytes = Array.isArray(response) ? new Uint8Array(response) : response;
+    return fromBinary(AwaitSecretsResponseSchema, responseBytes);
+  }
+  switchModes(mode) {
+    hostBindings.switchModes(mode);
+  }
+  log(message) {
+    hostBindings.log(message);
+  }
+}
+
+class Runner {
+  config;
+  request;
+  constructor(config, request) {
+    this.config = config;
+    this.request = request;
+  }
+  static async newRunner(configHandlerParams) {
+    hostBindings.versionV2();
+    const request = Runner.getRequest();
+    const config = await configHandler(request, configHandlerParams);
+    return new Runner(config, request);
+  }
+  static getRequest() {
+    const argsString = hostBindings.getWasiArgs();
+    let args;
+    try {
+      args = JSON.parse(argsString);
+    } catch (e) {
+      throw new Error("Invalid request: could not parse WASI arguments as JSON. Ensure the WASM runtime is passing valid arguments to the workflow");
+    }
+    if (args.length !== 2) {
+      throw new Error(`Invalid request: expected exactly 2 WASI arguments (script name and base64-encoded request payload), but received ${args.length}`);
+    }
+    const base64Request = args[1];
+    const bytes = Buffer.from(base64Request, "base64");
+    return fromBinary(ExecuteRequestSchema, bytes);
+  }
+  async run(initFn) {
+    const runtime = new Runtime(this.config, 0, this.request.maxResponseSize);
+    let result;
+    try {
+      const workflow = await initFn(this.config, {
+        getSecret: runtime.getSecret.bind(runtime)
+      });
+      switch (this.request.request.case) {
+        case "subscribe":
+          result = this.handleSubscribePhase(this.request, workflow);
+          break;
+        case "trigger":
+          result = this.handleExecutionPhase(this.request, workflow, runtime);
+          break;
+        default:
+          throw new Error(`Unknown request type '${this.request.request.case}': expected 'subscribe' or 'trigger'. This may indicate a version mismatch between the SDK and the CRE runtime`);
+      }
+    } catch (e) {
+      const err = e instanceof Error ? e.message : String(e);
+      result = create(ExecutionResultSchema, {
+        result: { case: "error", value: err }
+      });
+    }
+    const awaitedResult = await result;
+    hostBindings.sendResponse(toBinary(ExecutionResultSchema, awaitedResult));
+  }
+  async handleExecutionPhase(req, workflow, runtime) {
+    if (req.request.case !== "trigger") {
+      throw new Error(`cannot handle non-trigger request as a trigger: received request type '${req.request.case}' in handleExecutionPhase. This is an internal SDK error`);
+    }
+    const triggerMsg = req.request.value;
+    const id = BigInt(triggerMsg.id);
+    if (id > BigInt(Number.MAX_SAFE_INTEGER)) {
+      throw new Error(`Trigger ID ${id} exceeds JavaScript safe integer range (Number.MAX_SAFE_INTEGER = ${Number.MAX_SAFE_INTEGER}). This trigger ID cannot be safely represented as a number`);
+    }
+    const index = Number(triggerMsg.id);
+    if (Number.isFinite(index) && index >= 0 && index < workflow.length) {
+      const entry = workflow[index];
+      const schema = entry.trigger.outputSchema();
+      if (!triggerMsg.payload) {
+        return create(ExecutionResultSchema, {
+          result: {
+            case: "error",
+            value: `trigger payload is missing for handler at index ${index} (trigger ID ${triggerMsg.id}). The trigger event must include a payload`
+          }
+        });
+      }
+      const payloadAny = triggerMsg.payload;
+      const decoded = fromBinary(schema, payloadAny.value);
+      const adapted = entry.trigger.adapt(decoded);
+      try {
+        const result = await entry.fn(runtime, adapted);
+        const wrapped = Value.wrap(result);
+        return create(ExecutionResultSchema, {
+          result: { case: "value", value: wrapped.proto() }
+        });
+      } catch (e) {
+        const err = e instanceof Error ? e.message : String(e);
+        return create(ExecutionResultSchema, {
+          result: { case: "error", value: err }
+        });
+      }
+    }
+    return create(ExecutionResultSchema, {
+      result: {
+        case: "error",
+        value: `trigger not found: no workflow handler registered at index ${index} (trigger ID ${triggerMsg.id}). The workflow has ${workflow.length} handler(s) registered. Verify the trigger subscription matches a registered handler`
+      }
+    });
+  }
+  handleSubscribePhase(req, workflow) {
+    if (req.request.case !== "subscribe") {
+      return create(ExecutionResultSchema, {
+        result: {
+          case: "error",
+          value: `subscribe request expected but received '${req.request.case}' in handleSubscribePhase. This is an internal SDK error`
+        }
+      });
+    }
+    const subscriptions = workflow.map((entry) => ({
+      id: entry.trigger.capabilityId(),
+      method: entry.trigger.method(),
+      payload: entry.trigger.configAsAny()
+    }));
+    const subscriptionRequest = create(TriggerSubscriptionRequestSchema, {
+      subscriptions
+    });
+    return create(ExecutionResultSchema, {
+      result: { case: "triggerSubscriptions", value: subscriptionRequest }
+    });
+  }
+}
 var prepareErrorResponse = (error) => {
   let errorMessage = null;
   if (error instanceof Error) {
@@ -12925,6 +13832,7 @@ var sendErrorResponse = (error) => {
   }
   hostBindings.sendResponse(payload);
 };
+var import_node_fetch = __toESM(require_browser(), 1);
 async function resolvePhone(userId) {
   const response = await import_node_fetch.default(`${process.env.RESOLVER_BASE_URL}/resolve`, {
     method: "POST",
@@ -12967,7 +13875,7 @@ function buildMessage(event) {
       return "Event received.";
   }
 }
-async function main() {
+var onCronTrigger = async (runtime2) => {
   const eventType = process.env.EVENT_TYPE || "DepositRecorded";
   const event = {
     __name__: eventType,
@@ -12980,17 +13888,26 @@ async function main() {
     totalDebt: 50,
     debtCleared: 50
   };
-  console.log("\uD83D\uDD14 Event triggered:", event.__name__);
+  runtime2.log(`Triggered simulation for event: ${event.__name__}`);
   const phone = await resolvePhone(event.userId);
   if (!phone) {
-    console.log("⚠️ No phone found for userId.");
+    runtime2.log("No phone found for this userId.");
     return "No phone found";
   }
   const message = buildMessage(event);
   const smsResponse = await sendSms(phone, message);
-  console.log("\uD83D\uDCE8 SMS Response:", smsResponse);
-  console.log("✅ Simulation finished.");
+  runtime2.log(`SMS response: ${JSON.stringify(smsResponse)}`);
   return smsResponse;
+};
+var initWorkflow = (_config) => {
+  const cron = new CronCapability;
+  return [
+    handler(cron.trigger({ schedule: "* * * * *" }), onCronTrigger)
+  ];
+};
+async function main() {
+  const runner = await Runner.newRunner();
+  await runner.run(initWorkflow);
 }
 main().catch(sendErrorResponse);
 export {

@@ -117,6 +117,91 @@ app.post("/resolve", (req, res) => {
     return res.json({ phone });
 });
 
+app.post("/notify", async (req, res) => {
+    const key = req.header("x-api-key");
+    if (key !== API_KEY) return res.status(401).json({ error: "unauthorized" });
+
+    const {
+        userId,
+        eventType,
+        netAmount,
+        feeAmount,
+        usdtAmount,
+        liquidAmount,
+        amount,
+        totalDebt,
+        debtCleared,
+    } = req.body;
+
+    if (!userId || !eventType) {
+        return res.status(400).json({ error: "missing fields" });
+    }
+
+    const normalizedId = String(userId).toLowerCase();
+    const phone = store[normalizedId] || null;
+
+    if (!phone) {
+        return res.json({ ok: false, error: "no phone found" });
+    }
+
+    let message = "Event received.";
+    switch (eventType) {
+        case "UserRegistered":
+            message = "✅ Registration successful. Welcome to CoreMicroBank.";
+            break;
+        case "DepositRecorded":
+            message = `💰 Deposit recorded. Net: ${netAmount} (fee: ${feeAmount}).`;
+            break;
+        case "FeesConvertedToLiquid":
+            message = `🤖 Automation: Fees auto-converted & staked. ${usdtAmount} → LIQ ${liquidAmount}.`;
+            break;
+        case "LoanIssued":
+            message = `📢 Loan issued: ${amount}. Total debt: ${totalDebt}.`;
+            break;
+        case "DemoActiveBorrowerUpdated":
+            message = "🕒 You are the active borrower. Interest will auto-accrue.";
+            break;
+        case "WithdrawalProcessed":
+            message = `✅ Withdrawal processed: ${amount}.`;
+            break;
+        case "UserLiquidated":
+            message = `⚠️ Liquidation executed. Debt cleared: ${debtCleared}.`;
+            break;
+    }
+
+    try {
+        const url = process.env.AT_SANDBOX === "true"
+            ? "https://api.sandbox.africastalking.com/version1/messaging"
+            : "https://api.africastalking.com/version1/messaging";
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
+                apiKey: AT_API_KEY,
+            },
+            body: new URLSearchParams({
+                username: AT_USERNAME,
+                to: phone,
+                message,
+            }),
+        });
+
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch {
+            return res.json({ ok: false, raw: text });
+        }
+
+        return res.json({ ok: true, phone, message, data });
+    } catch (err) {
+        console.error("notify error:", err);
+        return res.json({ ok: false, error: "notify failed" });
+    }
+});
 // Optional SMS proxy for local demo
 app.post("/sms", async (req, res) => {
     const { to, message } = req.body;
