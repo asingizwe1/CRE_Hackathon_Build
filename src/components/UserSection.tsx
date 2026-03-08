@@ -7,7 +7,8 @@ import VoucherDisplay from "./VoucherDisplay";
 import type { Voucher } from "@/types/voucher";
 import { notifySMS } from "@/utils/smsClient";
 import { useCoreMicroBank } from "@/hooks/useCoreMicroBank";
-
+import { saveUserPhoneRemote, saveUserPhone } from "@/utils/userDictionary";
+import { saveDemoEventRemote } from "@/utils/demoEvent";
 const pageWrap = {
 
   maxWidth: 920,              // wider so cards breathe
@@ -77,6 +78,13 @@ const UserSection = () => {
       const contract = getCoreMicroBankContract(signer);
 
       const userId = phoneToUserId(phone);
+      await saveUserPhoneRemote(userId, phone);
+      saveUserPhone(userId, phone);
+
+      await saveDemoEventRemote({
+        eventType: "UserRegistered",
+        userId,
+      });
       setStatus("Registering user on-chain...");
 
       const tx = await contract.registerUser(userId);

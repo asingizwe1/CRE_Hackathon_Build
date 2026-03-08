@@ -5,6 +5,7 @@ import { useCoreMicroBank } from "../hooks/useCoreMicroBank";
 import { saveUserPhone, saveUserPhoneRemote } from "@/utils/userDictionary";
 import { phoneToUserId } from "@/utils/userId";
 import { notifySMS } from "@/utils/smsClient";
+import { saveDemoEventRemote } from "@/utils/demoEvent";
 //Do NOT mix useWeb3React and window.ethereum in the same app
 // recordDeposit(bytes32 userId, uint256 amount)
 // THE REMOTE LIQUID VOUCHER
@@ -82,6 +83,12 @@ const DepositSection = ({ refreshProtocol }: DepositSectionProps) => {
             const protocolAmount = Math.floor(usdAmount);
             await saveUserPhoneRemote(userId, phone);
             saveUserPhone(userId, phone);
+            await saveDemoEventRemote({
+                eventType: "DepositRecorded",
+                userId,
+                netAmount: protocolAmount - Math.floor((protocolAmount * 500) / 10000),
+                feeAmount: Math.floor((protocolAmount * 500) / 10000),
+            });
             const tx = await recordDeposit(phone, protocolAmount.toString());
             await tx.wait();
             await refreshProtocol();

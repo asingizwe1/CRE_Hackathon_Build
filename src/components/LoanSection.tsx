@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useCoreMicroBank } from "../hooks/useCoreMicroBank";
 import { notifySMS } from "@/utils/smsClient";
 import { ugxApproxFromUsd } from "@/utils/sharedUtils";
-
+import { phoneToUserId } from "@/utils/userId";
+import { saveUserPhoneRemote, saveUserPhone } from "@/utils/userDictionary";
+import { saveDemoEventRemote } from "@/utils/demoEvent";
 const UGX_PER_USD = 3600;
 
 const formCard = {
@@ -63,6 +65,16 @@ const LoanSection = () => {
         }
 
         try {
+            const userId = phoneToUserId(phone);
+            await saveUserPhoneRemote(userId, phone);
+            saveUserPhone(userId, phone);
+
+            await saveDemoEventRemote({
+                eventType: "LoanIssued",
+                userId,
+                amount: Number(amount),
+                totalDebt: Number(amount),
+            });
             await requestLoan(phone, amount);
 
             // notifySMS(

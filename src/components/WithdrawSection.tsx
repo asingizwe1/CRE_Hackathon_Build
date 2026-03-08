@@ -11,9 +11,10 @@ import { ugxApproxFromUsd } from "@/utils/sharedUtils";
 //import { getUserPhone } from "../utils/userDictionary";
 import { saveUserPhone, saveUserPhoneRemote } from "../utils/userDictionary";
 import { phoneToUserId } from "../utils/userId";
-
+import { saveDemoEventRemote } from "@/utils/demoEvent";
 import type { Voucher } from "@/types/voucher";
 import { useEffect } from "react";
+
 const formCard = {
     background: "#ffffff",
     borderRadius: 16,
@@ -81,7 +82,11 @@ const WithdrawSection = ({ totalLiquidStaked }: { totalLiquidStaked: number }) =
         // keep local copy for UI convenience
         saveUserPhone(userId, normalized);
         localStorage.setItem("lastPhone", normalized);
-
+        await saveDemoEventRemote({
+            eventType: "WithdrawalProcessed",
+            userId,
+            amount: Number(amount),
+        });
         // call contract via your hook (adapt if your hook expects phone instead of userId)
         try {
             // If your hook expects userId:
