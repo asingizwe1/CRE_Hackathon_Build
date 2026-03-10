@@ -9,7 +9,7 @@ The project models a **microbanking protocol** where deposits, withdraws, loans,
 
 MICRO-VOUCH AGENT Smart Contract is Deployed at contract address: 0x1907798912Da95635CE1B3F30933aC5aC297cBd0
 
-I used a custom ERC20 token for the simulating transactions deployed at 0x68eF28DFFbE618B0fA04bBBF22b34123Ab9D14b2
+I used a custom ERC20 token for simulating transactions deployed at 0x68eF28DFFbE618B0fA04bBBF22b34123Ab9D14b2
 
 **CHAINLINK FILES**  
 SMART CONTRACT - https://github.com/asingizwe1/CRE_Hackathon_Build/blob/main/CONTRACTS/Core_Microbanking_Features.sol
