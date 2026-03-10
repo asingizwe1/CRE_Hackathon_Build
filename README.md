@@ -9,7 +9,7 @@ The project models a **microbanking protocol** where deposits, withdraws, loans,
 
 MICRO-VOUCH AGENT Smart Contract is Deployed at contract address: 0x1907798912Da95635CE1B3F30933aC5aC297cBd0
 
-I used a custom ERC20 token for simulating transactions deployed at 0x68eF28DFFbE618B0fA04bBBF22b34123Ab9D14b2
+I used a custom ERC20 token for simulating protocol fee transactions deployed at 0xa05F1D815AF6d1B903dCFAbA0c35aFee335ff486
 
 **CHAINLINK FILES**  
 SMART CONTRACT - https://github.com/asingizwe1/CRE_Hackathon_Build/blob/main/CONTRACTS/Core_Microbanking_Features.sol
@@ -82,7 +82,8 @@ This project demonstrates how smart contracts and Chainlink automation can power
 
 1️⃣ User registers through an agent  
 2️⃣ Agent records deposit on-chain  
-3️⃣ Protocol collects a **5% fee**  
+3️⃣ Protocol collects a **5% fee** 
+-I used a custom ERC20 token for simulating protocol fee transactions deployed at 0xa05F1D815AF6d1B903dCFAbA0c35aFee335ff486 
 4️⃣ Fees accumulate in the protocol treasury  
 
 5️⃣ **Chainlink Automation** converts fees into yield automatically.
